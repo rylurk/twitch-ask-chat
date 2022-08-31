@@ -1,38 +1,44 @@
-import type { NextPage } from 'next';
-import { signIn, signOut, useSession } from 'next-auth/react';
-import Head from 'next/head';
-import { trpc } from '../utils/trpc';
+import type { NextPage } from "next";
+import { signIn, signOut, useSession } from "next-auth/react";
+import Head from "next/head";
+import { trpc } from "../utils/trpc";
 
-type TechnologyCardProps = {
-  name: string;
-  description: string;
-  documentation: string;
+const QuestionsView = () => {
+  const { data, isLoading } = trpc.useQuery(["questions.get-my-question"]);
+
+  return (
+    <div className="flex flex-col">
+      {data?.map((q) => (
+        <div key={q.id}>{q.body}</div>
+      ))}
+    </div>
+  );
 };
 
 const HomeContents = () => {
   const { data, status } = useSession();
 
-  if (status === 'loading') return <div>Loading...</div>;
+  if (status === "loading") return <div>Loading...</div>;
 
   if (!data) {
     return (
       <div>
         <div>Please log in</div>
-        <button onClick={() => signIn('twitch')}>Sign in with Twitch</button>
+        <button onClick={() => signIn("twitch")}>Sign in with Twitch</button>
       </div>
     );
   }
 
   return (
-    <div>
-      Hello {data.user?.name}
-      <button onClick={() => signOut()}>Sign out</button>
+    <div className="flex flex-col">
+      Hello {data.user?.name} {data.user?.id}
+      <QuestionsView />
     </div>
   );
 };
 
 const Home: NextPage = () => {
-  const hello = trpc.useQuery(['example.hello', { text: 'from tRPC' }]);
+  const hello = trpc.useQuery(["example.hello", { text: "from tRPC" }]);
 
   return (
     <>
