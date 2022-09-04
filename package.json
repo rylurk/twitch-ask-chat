@@ -18,6 +18,8 @@
     "@trpc/server": "^9.27.2",
     "next": "12.2.5",
     "next-auth": "^4.10.3",
+    "pusher": "^5.1.1-beta",
+    "pusher-js": "^7.4.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-query": "^3.39.2",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "@types/node": "18.0.0",
+    "@types/pusher-js": "^5.1.0",
     "@types/react": "18.0.14",
     "@types/react-dom": "18.0.5",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
