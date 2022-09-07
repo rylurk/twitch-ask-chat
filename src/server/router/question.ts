@@ -1,7 +1,15 @@
 import { TRPCError } from "@trpc/server";
-import { resolve } from "path";
 import { z } from "zod";
 import { createRouter } from "./context";
+import PusherServer from "pusher";
+import { env } from "../../env/server.mjs";
+
+const pusherServerClient = new PusherServer({
+  appId: env.PUSHER_APP_ID,
+  key: env.NEXT_PUBLIC_PUSHER_APP_KEY,
+  secret: env.PUSHER_APP_SECRET,
+  cluster: env.PUSHER_APP_CLUSTER,
+});
 
 export const questionRouter = createRouter()
   .query("get-my-question", {
@@ -41,5 +49,34 @@ export const questionRouter = createRouter()
         },
       });
       return question;
+    },
+  })
+  .mutation("pin-question", {
+    input: z.object({ questionId: z.string() }),
+    async resolve({ ctx, input }) {
+      if (!ctx.session || !ctx.session.user?.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const question = await ctx.prisma.question.findFirst({
+        where: { id: input.questionId },
+      });
+
+      if (!question || question.userId !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "NOT YOUR QUESTION",
+        });
+      }
+
+      await pusherServerClient.trigger(
+        `user-${question.userId}`,
+        "question-pinned",
+        {
+          question: question.body,
+        }
+      );
     },
   });
